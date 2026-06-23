@@ -30,6 +30,22 @@ if [ "${1:-}" = "--restart" ]; then
     done
 fi
 
+# Ensure the native-window system libs (GTK3 + WebKit2GTK) are present. When
+# launched from a terminal this auto-installs them (sudo can prompt); when
+# launched from the GNOME icon there's no tty for a password, so we surface a
+# clear message telling the user to run `session-hub` in a terminal once.
+# shellcheck source=scripts/ensure-gui-deps.sh
+. "$DIR/scripts/ensure-gui-deps.sh"
+if ! gui_deps_ok; then
+    ensure_gui_deps || true
+    if ! gui_deps_ok; then
+        msg="Missing GTK3 + WebKit2GTK libraries. Run 'session-hub' once in a terminal to install them (it needs your password), or run ${DIR}/install-app.sh"
+        command -v notify-send >/dev/null && notify-send "Session Hub" "$msg" || true
+        echo "$msg" >&2
+        exit 1
+    fi
+fi
+
 # Bootstrap the virtualenv on first run. --system-site-packages lets it see the
 # system PyGObject/WebKit2 that pywebview's GTK backend needs.
 if [ ! -x "$DIR/.venv/bin/session-hub-app" ]; then

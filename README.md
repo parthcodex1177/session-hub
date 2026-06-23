@@ -42,7 +42,7 @@ all from a native desktop window or browser tab.
 | | Linux | macOS | Windows |
 |---|---|---|---|
 | Python | 3.10+ | 3.10+ | 3.10+ |
-| Native window | GTK3 + `gir1.2-webkit2-4.1` (stock Ubuntu GNOME) | built-in WKWebView | Edge WebView2 (Win 10/11) |
+| Native window | GTK3 + WebKit2GTK (`gir1.2-webkit2-4.0`/`4.1`) — **auto-installed** | built-in WKWebView | Edge WebView2 (Win 10/11) |
 | Browser mode | ✅ any browser | ✅ any browser | ✅ any browser |
 | Claude Code | optional | optional | optional |
 | Antigravity CLI | optional | optional | optional |
@@ -61,12 +61,14 @@ git clone https://github.com/parthcodex1177/session-hub.git ~/tools/session-hub
 Adds **Session Hub** to the GNOME app grid and a `session-hub` command on PATH.
 Search it in Activities or pin it to the dock.
 
-Uninstall: `~/tools/session-hub/install-app.sh --uninstall`
+The installer **auto-detects and installs** the native-window libraries
+(PyGObject + GTK3 + WebKit2GTK — the right `gir1.2-webkit2-4.0`/`4.1` for your
+release), prompting for your password if needed. Re-running `install-app.sh`
+after `git pull` re-checks them, so updates stay self-healing. If you launch
+from the GNOME icon on a fresh machine and the libs are missing, run
+`session-hub` once in a terminal so it can install them.
 
-If WebKit2GTK is missing:
-```bash
-sudo apt install gir1.2-webkit2-4.1
-```
+Uninstall: `~/tools/session-hub/install-app.sh --uninstall`
 
 ### macOS — native app
 

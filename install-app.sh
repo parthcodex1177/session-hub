@@ -20,6 +20,13 @@ if [ "${1:-}" = "--uninstall" ]; then
     exit 0
 fi
 
+# Ensure the native-window system libraries (GTK3 + WebKit2GTK) are present,
+# installing them automatically if missing. Runs on install AND on update
+# (re-running this script). Non-fatal: browser mode works without them.
+# shellcheck source=scripts/ensure-gui-deps.sh
+. "$DIR/scripts/ensure-gui-deps.sh"
+ensure_gui_deps || echo "warning: native window may not open; browser mode (./run.sh) still works." >&2
+
 chmod +x "$LAUNCHER"
 mkdir -p "$APPS" "$HOME/.local/bin" "$ICON_DIR"
 

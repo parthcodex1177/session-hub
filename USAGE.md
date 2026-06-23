@@ -75,6 +75,6 @@ choice is remembered across restarts.
 |---|---|
 | Changes/fixes not showing after an upgrade | `session-hub-launch.sh --restart` (a stale instance may be holding the window) |
 | "Failed to start" notification | Check `~/.local/state/session-hub/app.log` |
-| Native window won't open on Linux | Install WebKit2GTK: `sudo apt install gir1.2-webkit2-4.1` |
+| Native window won't open on Linux | Run `session-hub` in a terminal once — it auto-installs GTK3 + WebKit2GTK (asks for your password). Or run `install-app.sh`. Browser mode (`run.sh`) needs no GTK. |
 | No data on first run | Click **⟳ Refresh**; ensure you have Claude Code or Antigravity history |
 | Inspect errors | In the native window, right-click → Inspect → Console |

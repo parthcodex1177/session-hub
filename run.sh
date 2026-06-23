@@ -7,6 +7,13 @@
 set -e
 cd "$(dirname "$0")"
 
+# For the native window, make sure GTK3 + WebKit2GTK are installed (Linux).
+if [ "${1:-}" = "--app" ]; then
+    # shellcheck source=scripts/ensure-gui-deps.sh
+    . "$(dirname "$0")/scripts/ensure-gui-deps.sh"
+    ensure_gui_deps || echo "warning: native window may not open; try browser mode: ./run.sh" >&2
+fi
+
 if [ ! -d .venv ]; then
     # Linux: --system-site-packages so pywebview can reach GTK/WebKit2 system libs.
     # macOS/other: plain venv (pywebview brings its own WKWebView bridge via PyObjC).
