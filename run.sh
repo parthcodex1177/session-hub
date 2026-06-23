@@ -24,7 +24,8 @@ if [ ! -d .venv ]; then
     fi
     # editable install needs setuptools>=64 (PEP 660); distro venvs ship older.
     .venv/bin/python -m pip install -q --upgrade pip setuptools wheel
-    .venv/bin/pip install -q -e .
+    # [native] pulls pywebview so `--app` works; harmless for browser mode.
+    .venv/bin/pip install -q -e ".[native]"
 fi
 
 if [ "${1:-}" = "--app" ]; then

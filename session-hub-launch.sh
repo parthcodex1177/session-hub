@@ -53,7 +53,7 @@ fi
 if [ ! -x "$DIR/.venv/bin/session-hub-app" ]; then
     [ -d "$DIR/.venv" ] || python3 -m venv --system-site-packages "$DIR/.venv"
     "$DIR/.venv/bin/python" -m pip install -q --upgrade pip setuptools wheel
-    "$DIR/.venv/bin/pip" install -q -e "$DIR"
+    "$DIR/.venv/bin/pip" install -q -e "${DIR}[native]"   # [native] = pywebview
 fi
 
 # Single-instance guard: if another launch holds the lock, do nothing. The

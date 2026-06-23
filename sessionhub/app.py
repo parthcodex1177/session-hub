@@ -4,6 +4,7 @@ import io
 import json
 import re
 import subprocess
+import sys
 import threading
 from datetime import date, timedelta
 from pathlib import Path
@@ -580,9 +581,18 @@ class NoCacheStaticFiles(StaticFiles):
         return response
 
 
+def _static_dir() -> Path:
+    """Locate the static assets, whether running from source or a frozen
+    PyInstaller bundle (which extracts data files under sys._MEIPASS)."""
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        return Path(meipass) / "sessionhub" / "static"
+    return Path(__file__).parent / "static"
+
+
 app.mount(
     "/",
-    NoCacheStaticFiles(directory=Path(__file__).parent / "static", html=True),
+    NoCacheStaticFiles(directory=_static_dir(), html=True),
     name="static",
 )
 
