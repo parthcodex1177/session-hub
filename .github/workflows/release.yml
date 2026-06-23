@@ -21,7 +21,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          # Build on the OLDEST supported Ubuntu: a PyInstaller binary requires
+          # a glibc >= the one it was built against, so building on 22.04
+          # (glibc 2.35) lets it run on 22.04 and every newer release. Building
+          # on ubuntu-latest (24.04, glibc 2.39) breaks on older machines.
+          - os: ubuntu-22.04
             asset: session-hub-linux-x86_64
           - os: macos-latest
             asset: session-hub-macos-arm64
