@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session Hub</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="brand">⬢ Session Hub</div>
+  <nav>
+    <button id="tab-sessions" class="tab active">Sessions</button>
+    <button id="tab-stats" class="tab">Activity</button>
+  </nav>
+  <div class="header-right">
+    <span id="last-scan" class="muted"></span>
+    <button id="btn-refresh" class="btn primary">⟳ Refresh</button>
+  </div>
+</header>
+
+<main id="view-sessions">
+  <div class="toolbar">
+    <select id="f-tool">
+      <option value="">All tools</option>
+      <option value="claude">Claude Code</option>
+      <option value="antigravity">Antigravity</option>
+    </select>
+    <select id="f-project"><option value="">All projects</option></select>
+    <select id="f-model"><option value="">All models</option></select>
+    <div class="date-range" title="Filter by start date range">
+      <input type="date" id="f-from" aria-label="From date">
+      <span class="date-sep">→</span>
+      <input type="date" id="f-to" aria-label="To date">
+    </div>
+    <input type="search" id="f-search" placeholder="Search title, description, prompts…">
+    <label class="check"><input type="checkbox" id="f-empty"> show empty</label>
+  </div>
+  <div class="table-wrap">
+    <table id="sessions-table">
+      <thead>
+        <tr>
+          <th>Tool</th>
+          <th data-sort="title" class="sortable">Title</th>
+          <th>Description</th>
+          <th data-sort="project_name" class="sortable">Project</th>
+          <th>Model</th>
+          <th data-sort="started_at" class="sortable">Started</th>
+          <th data-sort="ended_at" class="sortable sorted-desc">Last activity</th>
+          <th data-sort="message_count" class="sortable num">Msgs</th>
+          <th data-sort="total_tokens" class="sortable num">Tokens in/out</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="sessions-body"></tbody>
+    </table>
+  </div>
+  <div class="pager">
+    <button id="pg-prev" class="btn">‹ Prev</button>
+    <span id="pg-info"></span>
+    <button id="pg-next" class="btn">Next ›</button>
+  </div>
+</main>
+
+<main id="view-stats" class="hidden">
+  <div id="stat-cards" class="cards"></div>
+  <div class="charts">
+    <div class="chart-box"><h3>Sessions per day</h3><canvas id="ch-day"></canvas></div>
+    <div class="chart-box"><h3>Sessions per project</h3><canvas id="ch-project"></canvas></div>
+    <div class="chart-box"><h3>Sessions per model</h3><canvas id="ch-model"></canvas></div>
+    <div class="chart-box"><h3>Tokens per day</h3><canvas id="ch-tokens"></canvas></div>
+  </div>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

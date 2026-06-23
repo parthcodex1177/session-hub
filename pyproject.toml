@@ -1,0 +1,24 @@
+[project]
+name = "session-hub"
+version = "0.1.0"
+description = "Local dashboard for Claude Code and Antigravity session history"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+    "pywebview>=5",
+]
+
+[project.scripts]
+session-hub = "sessionhub.app:main"
+session-hub-app = "sessionhub.desktop:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["sessionhub"]
+
+[tool.setuptools.package-data]
+sessionhub = ["static/*"]
