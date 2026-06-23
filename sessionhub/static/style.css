@@ -1,15 +1,8 @@
-html { color-scheme: dark; }
-[data-theme="light"] { color-scheme: light; }
-[data-theme="light"] {
-  --bg: #f4f6f8;
-  --panel: #ffffff;
-  --panel2: #edf0f3;
-  --border: #d0d7de;
-  --border-soft: rgba(0,0,0,.10);
-  --text: #1c2128;
-  --muted: #6e7781;
-}
+/* Dark is the default. The light overrides MUST come after :root and use a
+   higher-specificity selector (:root[data-theme] = 0,2,0 vs :root = 0,1,0),
+   otherwise the later/equal :root rule wins and the toggle appears dead. */
 :root {
+  color-scheme: dark;
   --bg: #0f1419;
   --panel: #161d26;
   --panel2: #1d2733;
@@ -23,6 +16,16 @@ html { color-scheme: dark; }
   --green: #2ecc71;
   --green-soft: #5fd99a;
   --header-h: 53px;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f6f8;
+  --panel: #ffffff;
+  --panel2: #edf0f3;
+  --border: #d0d7de;
+  --border-soft: rgba(0, 0, 0, .10);
+  --text: #1c2128;
+  --muted: #6e7781;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
