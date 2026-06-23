@@ -9,6 +9,12 @@ dependencies = [
     "pywebview>=5",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "httpx>=0.27",
+]
+
 [project.scripts]
 session-hub = "sessionhub.app:main"
 session-hub-app = "sessionhub.desktop:main"

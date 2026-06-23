@@ -1,5 +1,15 @@
+html { color-scheme: dark; }
+[data-theme="light"] { color-scheme: light; }
+[data-theme="light"] {
+  --bg: #f4f6f8;
+  --panel: #ffffff;
+  --panel2: #edf0f3;
+  --border: #d0d7de;
+  --border-soft: rgba(0,0,0,.10);
+  --text: #1c2128;
+  --muted: #6e7781;
+}
 :root {
-  color-scheme: dark;            /* native selects, date pickers & scrollbars render dark */
   --bg: #0f1419;
   --panel: #161d26;
   --panel2: #1d2733;
@@ -310,3 +320,40 @@ td.skel > span {
   z-index: 40;
   font-size: 13px;
 }
+
+/* tag chips */
+.tag-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: rgba(99,153,255,.15); color: #6399ff;
+  border: 1px solid rgba(99,153,255,.3);
+  border-radius: 999px; font-size: 11px; padding: 1px 7px;
+  margin-left: 4px; cursor: default;
+}
+.tag-chip.removable { cursor: default; }
+.tag-rm { background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 10px; line-height: 1; }
+.tag-input { width: 120px; }
+
+/* diff section in expanded row */
+.diff-section { margin-top: 14px; }
+.diff-section summary { cursor: pointer; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+.diff-section summary:hover { color: var(--text); }
+.diff-section ul { margin: 6px 0; padding-left: 18px; font-size: 13px; font-family: monospace; }
+.diff-section li { margin-bottom: 3px; color: var(--text); }
+
+/* export button / dropdown */
+.export-wrap { position: relative; }
+.export-menu {
+  position: absolute; top: 110%; right: 0; z-index: 20;
+  background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px; min-width: 90px;
+}
+.export-menu button {
+  display: block; width: 100%; background: none; border: none;
+  color: var(--text); text-align: left; padding: 6px 10px;
+  font-size: 13px; cursor: pointer; border-radius: 4px;
+}
+.export-menu button:hover { background: var(--panel); }
+
+/* tags management row inside expanded detail */
+.detail-tags { margin-bottom: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.detail-tags-label { font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-right: 4px; }

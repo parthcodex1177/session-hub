@@ -2,7 +2,7 @@ import sqlite3
 
 from . import config
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 
 DDL = """
 CREATE TABLE IF NOT EXISTS sessions (
@@ -44,11 +44,61 @@ CREATE TABLE IF NOT EXISTS prompts (
   PRIMARY KEY (session_id, seq)
 );
 
+CREATE VIRTUAL TABLE IF NOT EXISTS prompts_fts USING fts5(
+  text, session_id UNINDEXED, tokenize='porter unicode61'
+);
+
+CREATE TABLE IF NOT EXISTS tags (
+  session_id TEXT NOT NULL,
+  tag        TEXT NOT NULL,
+  PRIMARY KEY (session_id, tag),
+  FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT);
 """
 
 
 _initialized = False
+_migrated = False
+
+
+def _migrate(con: sqlite3.Connection) -> None:
+    """Run schema migrations.  Safe to call on any existing DB."""
+    global _migrated
+    if _migrated:
+        return
+
+    current = None
+    try:
+        row = con.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
+        if row:
+            current = row[0]
+    except sqlite3.OperationalError:
+        # meta table doesn't exist yet — DDL hasn't run; nothing to migrate
+        _migrated = True
+        return
+
+    if current is None or current < "2":
+        # Create FTS5 and tags tables if they don't already exist
+        con.executescript("""
+            CREATE VIRTUAL TABLE IF NOT EXISTS prompts_fts USING fts5(
+                text, session_id UNINDEXED, tokenize='porter unicode61'
+            );
+            CREATE TABLE IF NOT EXISTS tags (
+                session_id TEXT NOT NULL,
+                tag        TEXT NOT NULL,
+                PRIMARY KEY (session_id, tag),
+                FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
+            );
+        """)
+        con.execute(
+            "INSERT INTO meta(key, value) VALUES ('schema_version', '2') "
+            "ON CONFLICT(key) DO UPDATE SET value='2'"
+        )
+        con.commit()
+
+    _migrated = True
 
 
 def connect() -> sqlite3.Connection:
@@ -57,6 +107,7 @@ def connect() -> sqlite3.Connection:
     con = sqlite3.connect(config.INDEX_DB)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA journal_mode=WAL")
+    con.execute("PRAGMA foreign_keys = ON")
     if not _initialized:
         con.executescript(DDL)
         con.execute(
@@ -65,6 +116,7 @@ def connect() -> sqlite3.Connection:
         )
         con.commit()
         _initialized = True
+    _migrate(con)
     return con
 
 

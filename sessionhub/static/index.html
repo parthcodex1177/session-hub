@@ -16,6 +16,7 @@
   </nav>
   <div class="header-right">
     <span id="last-scan" class="muted"></span>
+    <button id="btn-theme" class="btn" title="Toggle light/dark theme">☀</button>
     <button id="btn-refresh" class="btn primary">⟳ Refresh</button>
   </div>
 </header>
@@ -29,6 +30,7 @@
     </select>
     <select id="f-project"><option value="">All projects</option></select>
     <select id="f-model"><option value="">All models</option></select>
+    <select id="f-tag"><option value="">All tags</option></select>
     <div class="date-range" title="Filter by start date range">
       <input type="date" id="f-from" aria-label="From date">
       <span class="date-sep">→</span>
@@ -36,6 +38,13 @@
     </div>
     <input type="search" id="f-search" placeholder="Search title, description, prompts…">
     <label class="check"><input type="checkbox" id="f-empty"> show empty</label>
+    <div class="export-wrap">
+      <button id="btn-export" class="btn" title="Export filtered sessions">↓ Export</button>
+      <div id="export-menu" class="export-menu hidden">
+        <button data-fmt="json">JSON</button>
+        <button data-fmt="csv">CSV</button>
+      </div>
+    </div>
   </div>
   <div class="table-wrap">
     <table id="sessions-table">
@@ -71,6 +80,7 @@
     <div class="chart-box"><h3>Sessions per project</h3><canvas id="ch-project"></canvas></div>
     <div class="chart-box"><h3>Sessions per model</h3><canvas id="ch-model"></canvas></div>
     <div class="chart-box"><h3>Tokens per day</h3><canvas id="ch-tokens"></canvas></div>
+    <div class="chart-box"><h3>Est. cost per day</h3><canvas id="ch-cost"></canvas></div>
   </div>
 </main>
 

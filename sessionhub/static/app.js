@@ -1,9 +1,10 @@
 "use strict";
 
 const state = {
-  tool: "", project: "", model: "", q: "", from: "", to: "",
+  tool: "", project: "", model: "", tag: "", q: "", from: "", to: "",
   includeEmpty: false, sort: "ended_at", dir: "desc",
   limit: 50, offset: 0, total: 0,
+  activeRefreshTimer: null,
 };
 const COLSPAN = 11;          // keep in sync with the table header
 let charts = [];
@@ -104,6 +105,7 @@ function sessionsQuery() {
   if (state.tool) p.set("tool", state.tool);
   if (state.project) p.set("project", state.project);
   if (state.model) p.set("model", state.model);
+  if (state.tag) p.set("tag", state.tag);
   if (state.q) p.set("q", state.q);
   if (state.from) p.set("date_from", state.from);
   if (state.to) p.set("date_to", state.to);
@@ -112,6 +114,20 @@ function sessionsQuery() {
   p.set("dir", state.dir);
   p.set("limit", state.limit);
   p.set("offset", state.offset);
+  return p.toString();
+}
+
+function exportQuery(fmt) {
+  const p = new URLSearchParams();
+  if (state.tool) p.set("tool", state.tool);
+  if (state.project) p.set("project", state.project);
+  if (state.model) p.set("model", state.model);
+  if (state.tag) p.set("tag", state.tag);
+  if (state.q) p.set("q", state.q);
+  if (state.from) p.set("date_from", state.from);
+  if (state.to) p.set("date_to", state.to);
+  if (state.includeEmpty) p.set("include_empty", "true");
+  p.set("format", fmt);
   return p.toString();
 }
 
@@ -137,6 +153,8 @@ function renderEmpty() {
 }
 
 async function loadSessions() {
+  clearTimeout(state.activeRefreshTimer);
+  state.activeRefreshTimer = null;
   renderSkeleton();
   let data;
   try {
@@ -161,6 +179,11 @@ async function loadSessions() {
   $("pg-info").textContent = `${from}–${to} of ${state.total}`;
   $("pg-prev").disabled = state.offset === 0;
   $("pg-next").disabled = to >= state.total;
+
+  // auto-refresh if any session on this page is still active
+  if (data.items.some((s) => s.is_active)) {
+    state.activeRefreshTimer = setTimeout(loadSessions, 30000);
+  }
 }
 
 function buildRow(s) {
@@ -179,9 +202,13 @@ function buildRow(s) {
     ? `<div class="cost" title="Estimated from ${esc(est.model)} pricing — excludes cache tokens">~${fmtCost(est)}</div>`
     : "";
 
+  const tagChips = (s.tags || []).map(
+    (t) => `<span class="tag-chip" data-tag="${esc(t)}">${esc(t)}</span>`
+  ).join("");
+
   tr.innerHTML = `
-    <td><span class="badge ${s.tool}">${s.tool}</span></td>
-    <td class="title-cell" title="${esc(s.title)}"><span class="chev" title="Show details">▸</span>${esc(s.title)}</td>
+    <td><span class="badge ${esc(s.tool)}">${esc(s.tool)}</span></td>
+    <td class="title-cell" title="${esc(s.title)}"><span class="chev" title="Show details">▸</span>${esc(s.title)}${tagChips}</td>
     <td class="desc-cell" title="${esc(s.description)}">${esc(s.description || "")}</td>
     <td title="${esc(s.project_path)}">${esc(s.project_name || "—")}</td>
     <td>${models}</td>
@@ -271,12 +298,95 @@ function expandRow(tr, s) {
         <button class="btn primary d-resume" title="Resume session">▶ Resume session</button>
         <button class="btn d-copy" title="Copy resume command">⧉ Copy command</button>
       </div>
+      <div class="detail-tags"><span class="detail-tags-label">Tags</span><span class="tags-chips"></span><input class="tag-input toolbar" placeholder="Add tag…" maxlength="30"><button class="btn sm tag-add">Add</button></div>
       <div class="detail-prompts"><h4>Prompt timeline</h4><div class="dp-body muted">Loading…</div></div>
+      <details class="diff-section">
+        <summary>Git commits during this session</summary>
+        <div class="diff-body muted">Loading…</div>
+      </details>
     </div></td>`;
   tr.after(detail);
 
   detail.querySelector(".d-resume").onclick = () => doResume(s.id);
   detail.querySelector(".d-copy").onclick = () => doCopy(s.id);
+
+  // render removable tag chips in the detail panel
+  function renderDetailTags(tags) {
+    const container = detail.querySelector(".tags-chips");
+    if (!container) return;
+    container.innerHTML = (tags || []).map(
+      (t) => `<span class="tag-chip removable" data-tag="${esc(t)}">${esc(t)} <button class="tag-rm" aria-label="Remove tag ${esc(t)}">✕</button></span>`
+    ).join("");
+    container.querySelectorAll(".tag-rm").forEach((btn) => {
+      btn.onclick = async () => {
+        const tag = btn.closest(".tag-chip").dataset.tag;
+        try {
+          const res = await api(`/api/sessions/${s.id}/tags/${encodeURIComponent(tag)}`, { method: "DELETE" });
+          renderDetailTags(res.tags);
+          refreshRowChips(res.tags);
+        } catch (e) {
+          toast("Remove tag failed: " + e.message, 3000);
+        }
+      };
+    });
+  }
+
+  // update chips in the summary row too
+  function refreshRowChips(tags) {
+    const titleCell = tr.querySelector(".title-cell");
+    if (!titleCell) return;
+    titleCell.querySelectorAll(".tag-chip").forEach((c) => c.remove());
+    (tags || []).forEach((t) => {
+      const chip = document.createElement("span");
+      chip.className = "tag-chip";
+      chip.dataset.tag = t;
+      chip.textContent = t;
+      titleCell.appendChild(chip);
+    });
+  }
+
+  // tag add button
+  const tagInput = detail.querySelector(".tag-input");
+  detail.querySelector(".tag-add").onclick = async () => {
+    const val = tagInput.value.trim();
+    if (!val) return;
+    try {
+      const res = await api(`/api/sessions/${s.id}/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag: val }),
+      });
+      tagInput.value = "";
+      renderDetailTags(res.tags);
+      refreshRowChips(res.tags);
+    } catch (e) {
+      toast("Add tag failed: " + e.message, 3000);
+    }
+  };
+  tagInput.onkeydown = (e) => { if (e.key === "Enter") detail.querySelector(".tag-add").click(); };
+
+  // lazy-load diff on <details> toggle
+  const diffSection = detail.querySelector(".diff-section");
+  let diffLoaded = false;
+  diffSection.addEventListener("toggle", () => {
+    if (!diffSection.open || diffLoaded) return;
+    diffLoaded = true;
+    api(`/api/sessions/${s.id}/diff`).then((res) => {
+      if (!detail.isConnected) return;
+      const body = detail.querySelector(".diff-body");
+      body.classList.remove("muted");
+      if (res.error) {
+        body.textContent = res.error;
+      } else if (!res.commits || !res.commits.length) {
+        body.textContent = "No commits found in this time range.";
+      } else {
+        body.innerHTML = `<ul>${res.commits.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>`;
+      }
+    }).catch((e) => {
+      const body = detail.querySelector(".diff-body");
+      if (body) body.textContent = "Failed to load commits: " + e.message;
+    });
+  });
 
   // Lazy-load prompts + resume availability from the per-session endpoint.
   api(`/api/sessions/${s.id}`).then((full) => {
@@ -291,9 +401,11 @@ function expandRow(tr, s) {
     resume.disabled = !full.resume_command;
     copy.disabled = !full.resume_command;
     if (full.resume_blocked_reason) resume.title = full.resume_blocked_reason;
+    renderDetailTags(full.tags || s.tags || []);
   }).catch((e) => {
     const dp = detail.querySelector(".dp-body");
     if (dp) dp.textContent = "Failed to load prompts: " + e.message;
+    renderDetailTags(s.tags || []);
   });
 }
 
@@ -308,6 +420,7 @@ async function loadStats() {
     ["Projects", t.projects],
     ["Input tokens", fmtTokens(t.input_tokens)],
     ["Output tokens", fmtTokens(t.output_tokens)],
+    ["Est. Cost", fmtCost({ cost: s.total_cost || 0 })],
   ].map(([k, v]) => `<div class="card"><div class="v">${v ?? 0}</div><div class="k">${k}</div></div>`).join("");
 
   charts.forEach((c) => c.destroy());
@@ -361,6 +474,17 @@ async function loadStats() {
     options: opts,
   }));
 
+  if (s.cost_per_day && s.cost_per_day.length) {
+    charts.push(new Chart($("ch-cost"), {
+      type: "bar",
+      data: {
+        labels: s.cost_per_day.map((d) => d.date),
+        datasets: [{ label: "Est. cost ($)", data: s.cost_per_day.map((d) => Number(d.cost) || 0), backgroundColor: "#e8833a" }],
+      },
+      options: { ...opts },
+    }));
+  }
+
   if (s.last_scan_at) $("last-scan").textContent = "indexed " + relTime(s.last_scan_at);
 }
 
@@ -372,6 +496,10 @@ async function loadFilterOptions() {
     s.projects.map((p) => `<option value="${esc(p)}">${esc(p.split("/").pop())}</option>`).join("");
   $("f-model").innerHTML = '<option value="">All models</option>' +
     s.per_model.map((m) => `<option value="${esc(m.model)}">${esc(m.model)}</option>`).join("");
+  if (s.tags && s.tags.length) {
+    $("f-tag").innerHTML = '<option value="">All tags</option>' +
+      s.tags.map((t) => `<option value="${esc(t.tag)}">${esc(t.tag)} (${t.count})</option>`).join("");
+  }
   if (s.last_scan_at) $("last-scan").textContent = "indexed " + relTime(s.last_scan_at);
 }
 
@@ -380,6 +508,7 @@ function bindFilters() {
   $("f-tool").onchange = (e) => { state.tool = e.target.value; reload(); };
   $("f-project").onchange = (e) => { state.project = e.target.value; reload(); };
   $("f-model").onchange = (e) => { state.model = e.target.value; reload(); };
+  $("f-tag").onchange = (e) => { state.tag = e.target.value; reload(); };
   $("f-from").onchange = (e) => { state.from = e.target.value; reload(); };
   $("f-to").onchange = (e) => { state.to = e.target.value; reload(); };
   $("f-empty").onchange = (e) => { state.includeEmpty = e.target.checked; reload(); };
@@ -400,6 +529,24 @@ function bindFilters() {
   });
   $("pg-prev").onclick = () => { state.offset = Math.max(0, state.offset - state.limit); loadSessions(); };
   $("pg-next").onclick = () => { state.offset += state.limit; loadSessions(); };
+
+  // export button / dropdown
+  const exportBtn = $("btn-export");
+  const exportMenu = $("export-menu");
+  const exportWrap = exportBtn.closest(".export-wrap");
+  exportBtn.onclick = (e) => {
+    e.stopPropagation();
+    exportMenu.classList.toggle("hidden");
+  };
+  exportMenu.querySelectorAll("button[data-fmt]").forEach((btn) => {
+    btn.onclick = () => {
+      window.location.href = "/api/sessions/export?" + exportQuery(btn.dataset.fmt);
+      exportMenu.classList.add("hidden");
+    };
+  });
+  document.addEventListener("click", (e) => {
+    if (!exportWrap.contains(e.target)) exportMenu.classList.add("hidden");
+  });
 }
 
 function bindTabs() {
@@ -414,6 +561,8 @@ function bindTabs() {
     $("tab-sessions").classList.remove("active");
     $("view-stats").classList.remove("hidden");
     $("view-sessions").classList.add("hidden");
+    clearTimeout(state.activeRefreshTimer);
+    state.activeRefreshTimer = null;
     loadStats().catch((e) => toast(e.message));
   };
 }
@@ -445,6 +594,32 @@ document.addEventListener("keydown", (e) => {
     $("f-search").focus();
   }
 });
+
+// ---------- theme toggle ----------
+
+(function initTheme() {
+  const saved = localStorage.getItem("theme");
+  if (saved === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+  }
+  const btn = $("btn-theme");
+  function updateIcon() {
+    const isLight = document.documentElement.getAttribute("data-theme") === "light";
+    btn.textContent = isLight ? "☾" : "☀";
+  }
+  updateIcon();
+  btn.onclick = () => {
+    const isLight = document.documentElement.getAttribute("data-theme") === "light";
+    if (isLight) {
+      document.documentElement.removeAttribute("data-theme");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.setAttribute("data-theme", "light");
+      localStorage.setItem("theme", "light");
+    }
+    updateIcon();
+  };
+})();
 
 bindTabs();
 bindFilters();

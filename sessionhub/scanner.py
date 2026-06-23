@@ -85,6 +85,11 @@ def _upsert(con: sqlite3.Connection, rec: SessionRecord, summary: ScanSummary) -
         "INSERT INTO prompts (session_id, seq, ts, text) VALUES (?,?,?,?)",
         [(rec.id, i, ts, text) for i, (ts, text) in enumerate(rec.prompts)],
     )
+    con.execute("DELETE FROM prompts_fts WHERE session_id = ?", (rec.id,))
+    con.executemany(
+        "INSERT INTO prompts_fts(text, session_id) VALUES (?,?)",
+        [(text, rec.id) for _, text in rec.prompts if text],
+    )
     if existing or relocated:
         summary.sessions_updated += 1
     else:
@@ -136,6 +141,7 @@ def scan(con: sqlite3.Connection) -> ScanSummary:
         ).fetchone()
         if row:
             con.execute("DELETE FROM prompts WHERE session_id = ?", (row["id"],))
+            con.execute("DELETE FROM prompts_fts WHERE session_id = ?", (row["id"],))
             con.execute("DELETE FROM sessions WHERE id = ?", (row["id"],))
             summary.sessions_removed += 1
 
@@ -146,6 +152,10 @@ def scan(con: sqlite3.Connection) -> ScanSummary:
     if ag_mtime and ag_mtime != db.get_meta(con, "ag_history_mtime"):
         con.execute(
             "DELETE FROM prompts WHERE session_id IN "
+            "(SELECT id FROM sessions WHERE tool='antigravity')"
+        )
+        con.execute(
+            "DELETE FROM prompts_fts WHERE session_id IN "
             "(SELECT id FROM sessions WHERE tool='antigravity')"
         )
         con.execute("DELETE FROM sessions WHERE tool='antigravity'")
