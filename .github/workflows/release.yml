@@ -25,9 +25,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build binary
         run: |
-          PY=/opt/python/cp312-cp312/bin/python
-          "$PY" -m pip install --upgrade pip
-          "$PY" -m pip install -e ".[build]"
+          # manylinux's bundled /opt/python is STATIC (no libpython.so), which
+          # PyInstaller can't use. Install a shared-library Python from dnf
+          # (linked against this image's glibc 2.28) and build with that.
+          dnf install -y python3.12 python3.12-pip python3.12-devel
+          PY=/usr/bin/python3.12
+          "$PY" -m pip install --upgrade pip setuptools wheel
+          "$PY" -m pip install ".[build]"
           "$PY" -m PyInstaller --clean --noconfirm session-hub.spec
           mv dist/session-hub dist/session-hub-linux-x86_64
       - uses: actions/upload-artifact@v4
