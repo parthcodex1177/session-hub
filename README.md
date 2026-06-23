@@ -8,6 +8,14 @@ Browse every past session, search your full prompt history with FTS, see token
 usage and estimated API cost, tag important sessions, and resume old work —
 all from a native desktop window or browser tab.
 
+![Sessions view](assets/screenshot-sessions.png)
+
+> _Activity tab — usage and cost analytics:_
+>
+> ![Activity view](assets/screenshot-activity.png)
+>
+> _(Screenshots use sample data.)_
+
 ---
 
 ## Features
