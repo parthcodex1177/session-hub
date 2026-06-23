@@ -88,9 +88,13 @@ def main():
 
     window.events.loaded += signal_ready
 
+    # private_mode=False persists localStorage so the light/dark theme choice
+    # survives restarts. Stale code is not a risk: NoCacheStaticFiles serves
+    # assets with no-store, so the window always loads fresh JS/CSS.
+    #
     # Blocks until the window is closed; then skip interpreter teardown to
     # dodge the WebKit2GTK shutdown X-error path (the daemon server dies too).
-    webview.start()
+    webview.start(private_mode=False)
     os._exit(0)
 
 
