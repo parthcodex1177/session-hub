@@ -237,6 +237,9 @@ tr.detail-row > td { padding: 0; background: var(--bg); border-bottom: 1px solid
 .detail-inner {
   padding: 16px 20px 18px;
   animation: detail-in .18s ease;
+  /* reset the table's `white-space: nowrap` (inherited from the parent td),
+     otherwise long IDs / file paths / model lists never wrap and overlap. */
+  white-space: normal;
 }
 @keyframes detail-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 .detail-desc {
@@ -256,8 +259,9 @@ tr.detail-row > td { padding: 0; background: var(--bg); border-bottom: 1px solid
   font-size: 13px;
   margin-bottom: 14px;
 }
+.detail-grid > div { min-width: 0; }   /* let grid items shrink so values wrap inside their track */
 .detail-grid .k { color: var(--muted); margin-right: 8px; }
-.detail-grid .v { word-break: break-all; }
+.detail-grid .v { word-break: break-word; overflow-wrap: anywhere; }
 .detail-actions { display: flex; gap: 10px; margin-bottom: 16px; }
 .detail-prompts h4 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
 .detail-prompts .prompt {
