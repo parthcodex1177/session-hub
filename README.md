@@ -51,18 +51,21 @@ all from a native desktop window or browser tab.
 
 ## Install
 
-### Download a ready-to-run binary (easiest — no Python, no setup)
+### Recommended: one-line install (no Python, no setup)
 
-Grab the single file for your OS from the
-[**Releases**](https://github.com/parthcodex1177/session-hub/releases) page —
-it bundles everything, needs **no Python or system libraries**, and opens the
-dashboard in your browser:
+The prebuilt binary bundles its own Python and needs **nothing** on your
+machine — it works on any Linux (glibc 2.28+, i.e. Ubuntu 20.04 and newer),
+regardless of what Python version (if any) you have.
 
 ```bash
-# Linux example
-chmod +x session-hub-linux-x86_64
-./session-hub-linux-x86_64
+curl -fsSL https://raw.githubusercontent.com/parthcodex1177/session-hub/main/install.sh | bash
 ```
+
+Then run `session-hub` (or click **Session Hub** in your app menu). Re-run the
+same command any time to update.
+
+**Or download the single file manually** from the
+[**Releases**](https://github.com/parthcodex1177/session-hub/releases) page:
 
 | OS | Asset |
 |---|---|
@@ -70,8 +73,12 @@ chmod +x session-hub-linux-x86_64
 | macOS (Apple Silicon) | `session-hub-macos-arm64` |
 | Windows (x86_64) | `session-hub-windows-x86_64.exe` |
 
-> The binary runs the dashboard in your default browser. For a native desktop
-> window instead, use one of the source installs below.
+```bash
+chmod +x session-hub-linux-x86_64 && ./session-hub-linux-x86_64
+```
+
+> The binary opens the dashboard in your default browser. The source installs
+> below give a native desktop window instead, but require Python 3.10+.
 
 ### Linux (Ubuntu / Debian) — native app
 
