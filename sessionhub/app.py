@@ -536,9 +536,23 @@ def resume_session(session_id: str):
     return {"ok": True, "terminal_used": terminal}
 
 
+class NoCacheStaticFiles(StaticFiles):
+    """Serve static assets with no-cache so an in-place upgrade of the app
+    (new app.js / style.css) always takes effect — the embedded WebKit window
+    and browsers otherwise cache aggressively and serve stale code."""
+
+    def is_not_modified(self, *args, **kwargs) -> bool:
+        return False  # never short-circuit to a 304
+
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        return response
+
+
 app.mount(
     "/",
-    StaticFiles(directory=Path(__file__).parent / "static", html=True),
+    NoCacheStaticFiles(directory=Path(__file__).parent / "static", html=True),
     name="static",
 )
 
