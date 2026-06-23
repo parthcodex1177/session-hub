@@ -1,6 +1,6 @@
 # Session Hub
 
-[![CI](https://github.com/your-username/session-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/session-hub/actions/workflows/ci.yml)
+[![CI](https://github.com/parthcodex1177/session-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/parthcodex1177/session-hub/actions/workflows/ci.yml)
 
 A local dashboard for **Claude Code** and **Antigravity CLI** session history.
 
@@ -46,7 +46,7 @@ all from a native desktop window or browser tab.
 ### Linux (Ubuntu / Debian) — native app
 
 ```bash
-git clone https://github.com/your-username/session-hub.git ~/tools/session-hub
+git clone https://github.com/parthcodex1177/session-hub.git ~/tools/session-hub
 ~/tools/session-hub/install-app.sh
 ```
 
@@ -63,7 +63,7 @@ sudo apt install gir1.2-webkit2-4.1
 ### macOS — native app
 
 ```bash
-git clone https://github.com/your-username/session-hub.git ~/tools/session-hub
+git clone https://github.com/parthcodex1177/session-hub.git ~/tools/session-hub
 ~/tools/session-hub/run.sh --app
 ```
 
@@ -74,7 +74,7 @@ Automator app or alias: `alias session-hub='~/tools/session-hub/run.sh --app'`.
 ### Windows — native app
 
 ```
-git clone https://github.com/your-username/session-hub.git %USERPROFILE%\tools\session-hub
+git clone https://github.com/parthcodex1177/session-hub.git %USERPROFILE%\tools\session-hub
 %USERPROFILE%\tools\session-hub\install.bat
 ```
 
@@ -116,7 +116,7 @@ They are a ballpark, not a billing figure.
 ## Development
 
 ```bash
-git clone https://github.com/your-username/session-hub.git
+git clone https://github.com/parthcodex1177/session-hub.git
 cd session-hub
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/pytest tests/ -v
@@ -124,6 +124,14 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for architecture notes.
+
+---
+
+## Documentation
+
+- **[USAGE.md](USAGE.md)** — how to use every feature, keyboard shortcuts, troubleshooting
+- **[FEATURES.md](FEATURES.md)** — complete feature reference
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — architecture and how to add a new tool
 
 ---
 

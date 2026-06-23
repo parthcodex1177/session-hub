@@ -3,7 +3,7 @@
 ## Running locally
 
 ```bash
-git clone https://github.com/your-username/session-hub.git
+git clone https://github.com/parthcodex1177/session-hub.git
 cd session-hub
 python3 -m venv .venv
 .venv/bin/pip install -e .
