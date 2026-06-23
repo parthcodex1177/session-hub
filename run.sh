@@ -22,6 +22,8 @@ if [ ! -d .venv ]; then
     else
         python3 -m venv .venv
     fi
+    # editable install needs setuptools>=64 (PEP 660); distro venvs ship older.
+    .venv/bin/python -m pip install -q --upgrade pip setuptools wheel
     .venv/bin/pip install -q -e .
 fi
 

@@ -47,9 +47,12 @@ if ! gui_deps_ok; then
 fi
 
 # Bootstrap the virtualenv on first run. --system-site-packages lets it see the
-# system PyGObject/WebKit2 that pywebview's GTK backend needs.
+# system PyGObject/WebKit2 that pywebview's GTK backend needs. Upgrade the build
+# tooling first: editable installs need setuptools>=64 (PEP 660), and distro
+# venvs often ship an older one.
 if [ ! -x "$DIR/.venv/bin/session-hub-app" ]; then
     [ -d "$DIR/.venv" ] || python3 -m venv --system-site-packages "$DIR/.venv"
+    "$DIR/.venv/bin/python" -m pip install -q --upgrade pip setuptools wheel
     "$DIR/.venv/bin/pip" install -q -e "$DIR"
 fi
 
