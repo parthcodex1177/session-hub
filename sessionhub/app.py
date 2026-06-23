@@ -48,6 +48,7 @@ def _build_where(
     tool=None,
     project=None,
     model=None,
+    tag=None,
     q=None,
     date_from=None,
     date_to=None,
@@ -63,6 +64,11 @@ def _build_where(
     if project:
         where.append("project_path = ?")
         params.append(project)
+    if tag:
+        where.append(
+            "EXISTS (SELECT 1 FROM tags WHERE tags.session_id = sessions.id AND tag = ?)"
+        )
+        params.append(tag)
     if model:
         where.append(
             "EXISTS (SELECT 1 FROM json_each(sessions.models) WHERE value = ?)"
@@ -115,6 +121,7 @@ def export_sessions(
     tool: str | None = None,
     project: str | None = None,
     model: str | None = None,
+    tag: str | None = None,
     q: str | None = None,
     date_from: str | None = None,
     date_to: str | None = None,
@@ -127,6 +134,7 @@ def export_sessions(
             tool=tool,
             project=project,
             model=model,
+            tag=tag,
             q=q,
             date_from=date_from,
             date_to=date_to,
@@ -169,6 +177,7 @@ def list_sessions(
     tool: str | None = None,
     project: str | None = None,
     model: str | None = None,
+    tag: str | None = None,
     q: str | None = None,
     date_from: str | None = None,
     date_to: str | None = None,
@@ -185,6 +194,7 @@ def list_sessions(
             tool=tool,
             project=project,
             model=model,
+            tag=tag,
             q=q,
             date_from=date_from,
             date_to=date_to,
@@ -202,6 +212,18 @@ def list_sessions(
             f"SELECT * FROM sessions {where_sql} {order_sql} LIMIT ? OFFSET ?",
             params + [limit, offset],
         ).fetchall()
+
+        # batch-fetch tags for the result set (avoids N+1)
+        ids = [r["id"] for r in rows]
+        tags_by_id: dict[str, list] = {}
+        if ids:
+            ph = ",".join("?" * len(ids))
+            for tr in con.execute(
+                f"SELECT session_id, tag FROM tags WHERE session_id IN ({ph}) "
+                f"ORDER BY session_id, tag",
+                ids,
+            ):
+                tags_by_id.setdefault(tr["session_id"], []).append(tr["tag"])
     finally:
         con.close()
 
@@ -211,6 +233,7 @@ def list_sessions(
         d = _row_to_dict(row)
         d["is_active"] = d["id"] in live
         d["active_status"] = live.get(d["id"])
+        d["tags"] = tags_by_id.get(d["id"], [])
         items.append(d)
     return {"total": total, "items": items}
 
@@ -358,10 +381,17 @@ def session_detail(session_id: str):
                 (session_id,),
             )
         ]
+        tags = [
+            r["tag"]
+            for r in con.execute(
+                "SELECT tag FROM tags WHERE session_id = ? ORDER BY tag", (session_id,)
+            )
+        ]
     finally:
         con.close()
     d = _row_to_dict(row)
     d["prompts"] = prompts
+    d["tags"] = tags
     live = active_sessions()
     d["is_active"] = session_id in live
     d["active_status"] = live.get(session_id)

@@ -95,6 +95,42 @@ def test_list_sessions_date_to_includes_whole_day_excludes_next_day(client):
     assert body["total"] == 2
 
 
+def test_list_sessions_tag_filter_returns_only_tagged_sessions(client):
+    # Tag one session, then filter by that tag — must return exactly it, and
+    # every row must carry a tags field. Regression guard: the tag filter was
+    # silently ignored (returned all rows) before being wired into _build_where.
+    assert client.post("/api/sessions/s2/tags", json={"tag": "important"}).status_code == 200
+
+    resp = client.get("/api/sessions", params={"tag": "important"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 1
+    assert body["items"][0]["id"] == "s2"
+    assert body["items"][0]["tags"] == ["important"]
+
+    # Untagged listing still exposes the tags field (empty list).
+    all_rows = client.get("/api/sessions").json()["items"]
+    assert all(isinstance(r["tags"], list) for r in all_rows)
+
+
+def test_export_and_detail_respect_tags(client):
+    # export?tag=X returns only tagged rows; detail exposes the tags field.
+    client.post("/api/sessions/s2/tags", json={"tag": "keep"})
+
+    exported = client.get("/api/sessions/export", params={"format": "json", "tag": "keep"})
+    assert exported.status_code == 200
+    rows = exported.json()
+    assert [r["id"] for r in rows] == ["s2"]
+
+    detail = client.get("/api/sessions/s2").json()
+    assert detail["tags"] == ["keep"]
+    assert client.get("/api/sessions/s1").json()["tags"] == []
+
+    # tag + date AND-compose: s2 is tagged AND on/before 2026-06-11
+    combo = client.get("/api/sessions", params={"tag": "keep", "date_to": "2026-06-11"})
+    assert {i["id"] for i in combo.json()["items"]} == {"s2"}
+
+
 def test_list_sessions_sort_injection_payload_is_rejected_to_default_order(client):
     # A SQL-injection-style sort value must fall back to the default column,
     # return 200, and leave the sessions table intact.

@@ -533,7 +533,8 @@ function bindFilters() {
   // export button / dropdown
   const exportBtn = $("btn-export");
   const exportMenu = $("export-menu");
-  const exportWrap = exportBtn.closest(".export-wrap");
+  const exportWrap = exportBtn && exportBtn.closest(".export-wrap");
+  if (!exportBtn || !exportMenu || !exportWrap) return;   // optional feature; skip if absent
   exportBtn.onclick = (e) => {
     e.stopPropagation();
     exportMenu.classList.toggle("hidden");
@@ -597,16 +598,17 @@ document.addEventListener("keydown", (e) => {
 
 // ---------- theme toggle ----------
 
-(function initTheme() {
+function initTheme() {
   const saved = localStorage.getItem("theme");
   if (saved === "light") {
     document.documentElement.setAttribute("data-theme", "light");
   }
   const btn = $("btn-theme");
-  function updateIcon() {
+  if (!btn) return;          // tolerate a stale/missing element — never block init
+  const updateIcon = () => {
     const isLight = document.documentElement.getAttribute("data-theme") === "light";
     btn.textContent = isLight ? "☾" : "☀";
-  }
+  };
   updateIcon();
   btn.onclick = () => {
     const isLight = document.documentElement.getAttribute("data-theme") === "light";
@@ -619,9 +621,24 @@ document.addEventListener("keydown", (e) => {
     }
     updateIcon();
   };
-})();
+}
 
-bindTabs();
-bindFilters();
-loadFilterOptions().catch(() => {});
-loadSessions().catch((e) => toast(e.message, 4000));
+// Run each init step in isolation so a single failure (e.g. a stale cached
+// DOM missing one element) can never stop the core data/filters/tabs from
+// loading. Data load comes first so the table always populates.
+function init() {
+  const step = (name, fn) => {
+    try { fn(); } catch (e) { console.error("init " + name + " failed:", e); }
+  };
+  step("tabs", bindTabs);
+  step("filters", bindFilters);
+  step("theme", initTheme);
+  loadFilterOptions().catch((e) => console.error("loadFilterOptions:", e));
+  loadSessions().catch((e) => toast(e.message, 4000));
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
