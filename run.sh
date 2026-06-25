@@ -23,7 +23,10 @@ if [ ! -d .venv ]; then
         python3 -m venv .venv
     fi
     # editable install needs setuptools>=64 (PEP 660); distro venvs ship older.
-    .venv/bin/python -m pip install -q --upgrade pip setuptools wheel
+    # On Linux --system-site-packages exposes the distro's ancient
+    # importlib_metadata (Ubuntu 20.04 = 1.x), which breaks modern setuptools on
+    # Python 3.8; upgrading it in the venv shadows the system copy.
+    .venv/bin/python -m pip install -q --upgrade pip setuptools wheel importlib-metadata
     # [native] pulls pywebview so `--app` works; harmless for browser mode.
     .venv/bin/pip install -q -e ".[native]"
 fi
