@@ -53,10 +53,12 @@ fi
 if [ ! -x "$DIR/.venv/bin/session-hub-app" ]; then
     [ -d "$DIR/.venv" ] || python3 -m venv --system-site-packages "$DIR/.venv"
     # --system-site-packages exposes the distro's ancient importlib_metadata
-    # (Ubuntu 20.04 ships 1.x), which modern setuptools can't import on Python
-    # 3.8 ("module 'importlib_metadata' has no attribute 'EntryPoints'").
-    # Upgrading it in the venv shadows the system copy. setuptools>=64 = PEP 660.
-    "$DIR/.venv/bin/python" -m pip install -q --upgrade pip setuptools wheel importlib-metadata
+    # and packaging (Ubuntu 20.04 ships importlib_metadata 1.x / packaging 20.x),
+    # which modern setuptools can't use on Python 3.8 ("importlib_metadata has no
+    # attribute 'EntryPoints'" / "canonicalize_version() got an unexpected
+    # keyword argument 'strip_trailing_zero'"). Upgrading them in the venv
+    # shadows the system copies. setuptools>=64 = PEP 660 editable installs.
+    "$DIR/.venv/bin/python" -m pip install -q --upgrade pip setuptools wheel importlib-metadata packaging
     "$DIR/.venv/bin/pip" install -q -e "${DIR}[native]"   # [native] = pywebview
 fi
 
