@@ -28,6 +28,13 @@ def _pick_port() -> int:
             return s.getsockname()[1]
 
 
+def _server_alive(host: str, port: int) -> bool:
+    """True if something is already accepting connections on host:port."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.5)
+        return s.connect_ex((host, port)) == 0
+
+
 def _open_when_ready(host: str, port: int, url: str) -> None:
     """Open the browser only once the server actually accepts connections, so
     the user never lands on a connection-refused page on a slow first start."""
@@ -42,6 +49,15 @@ def _open_when_ready(host: str, port: int, url: str) -> None:
 
 
 def main():
+    # Single-instance: if a Session Hub server is already up on the default
+    # port (e.g. launched once from the menu icon), just open the browser to it
+    # instead of starting a second server on a fallback port.
+    default_url = f"http://{config.HOST}:{config.PORT}/"
+    if _server_alive(config.HOST, config.PORT):
+        print(f"  Session Hub already running at {default_url} — opening browser.")
+        webbrowser.open(default_url)
+        return
+
     # Build / refresh the index before the page loads.
     con = db.connect()
     try:

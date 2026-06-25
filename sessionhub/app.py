@@ -606,7 +606,27 @@ def main():
     parser.add_argument(
         "--scan-only", action="store_true", help="run a scan, print summary, exit"
     )
+    parser.add_argument(
+        "--install-desktop",
+        action="store_true",
+        help="add 'Session Hub' to the application menu / start menu (Linux)",
+    )
+    parser.add_argument(
+        "--uninstall-desktop",
+        action="store_true",
+        help="remove the 'Session Hub' application menu entry",
+    )
     args = parser.parse_args()
+
+    if args.install_desktop:
+        from .desktop_install import install_desktop
+
+        sys.exit(install_desktop())
+
+    if args.uninstall_desktop:
+        from .desktop_install import uninstall_desktop
+
+        sys.exit(uninstall_desktop())
 
     if args.scan_only:
         con = db.connect()

@@ -51,33 +51,38 @@ all from a native desktop window or browser tab.
 
 ## Install
 
-### Recommended: pipx (one command, any Python 3.8+)
+### Recommended: one command (installs, adds menu icon, and updates)
 
-[pipx](https://pipx.pypa.io) installs Session Hub into its own isolated
-environment and puts `session-hub` on your PATH. It runs on **any Python 3.8 or
-newer** — including the Python that already ships with Ubuntu 20.04+, Debian
-11+, and macOS — so there's nothing else to install.
+This installs pipx if needed, installs Session Hub from GitHub, and registers
+**Session Hub** in your application / start menu — all at once. **Run the exact
+same command again any time to update** to the latest version:
 
 ```bash
-# install pipx once (skip if you already have it)
+curl -fsSL https://raw.githubusercontent.com/parthcodex1177/session-hub/main/install-pipx.sh | bash
+```
+
+Then launch **Session Hub** from your app menu (on GNOME, if it doesn't appear
+immediately, press **Alt+F2 → `r` → Enter** once, or log out/in), or run
+`session-hub` in a terminal. It runs on **any Python 3.8+** — including the
+Python already on Ubuntu 20.04+, Debian 11+, and macOS.
+
+Remove it with `pipx uninstall session-hub` and `session-hub --uninstall-desktop`.
+
+### Manual pipx (same thing, step by step)
+
+```bash
 python3 -m pip install --user pipx && python3 -m pipx ensurepath
-
-# install Session Hub straight from GitHub — no PyPI account needed
 pipx install "git+https://github.com/parthcodex1177/session-hub.git"
-
-session-hub        # opens the dashboard in your browser at 127.0.0.1:8788
+session-hub --install-desktop      # add the app-menu icon (Linux)
+session-hub                        # or just run it in your browser
 ```
 
-Update any time with `pipx upgrade session-hub`; remove with
-`pipx uninstall session-hub`.
+Update with `pipx install --force "git+https://github.com/parthcodex1177/session-hub.git"`.
 
-**Native desktop window** (optional, instead of a browser tab) — add the
-`native` extra. On Linux this also needs GTK3 + WebKit2GTK (see below):
-
-```bash
-pipx install "session-hub[native] @ git+https://github.com/parthcodex1177/session-hub.git"
-session-hub-app
-```
+> The menu icon launches **browser mode** (the dashboard opens in your default
+> browser). A true native desktop window needs the system GTK/WebKit libraries,
+> which an isolated pipx environment can't use — for that, use the Linux native
+> app install below (git clone + `install-app.sh`).
 
 ### Alternative: prebuilt binary (no Python at all)
 

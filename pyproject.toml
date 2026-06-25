@@ -35,4 +35,4 @@ build-backend = "setuptools.build_meta"
 packages = ["sessionhub"]
 
 [tool.setuptools.package-data]
-sessionhub = ["static/*"]
+sessionhub = ["static/*", "session-hub.svg"]
