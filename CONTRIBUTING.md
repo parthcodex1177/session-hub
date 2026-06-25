@@ -28,7 +28,10 @@ Tests use only `tmp_path` fixtures and never touch your real `~/.claude` or
 
 ## Code style
 
-- Python 3.10+, no external type-checking deps required.
+- Python 3.8+, no external type-checking deps required. Keep it 3.8-compatible:
+  every module starts with `from __future__ import annotations`, and FastAPI
+  route signatures use `typing.Optional[...]` (not `X | None`) because FastAPI
+  resolves those annotations at runtime.
 - Keep the frontend in vanilla JS + CSS (no build step).
 - All dynamic HTML must pass through `esc()` (XSS guard).
 - Security boundary: `resume.py` validates session IDs against strict UUID

@@ -1,4 +1,6 @@
 """Build resume commands and launch them in a new terminal window."""
+from __future__ import annotations
+
 import os
 import re
 import shlex

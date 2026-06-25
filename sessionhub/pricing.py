@@ -4,6 +4,7 @@ Prices are per million tokens (USD).
 Rows: (model_substr, input_price_per_M, output_price_per_M)
 First match wins — list more-specific substrings before less-specific ones.
 """
+from __future__ import annotations
 
 PRICING: list[tuple[str, float, float]] = [
     ("opus",              15.0,   75.0),

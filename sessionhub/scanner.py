@@ -1,4 +1,6 @@
 """Incremental indexing of session files into the SQLite index."""
+from __future__ import annotations
+
 import json
 import sqlite3
 import time

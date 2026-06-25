@@ -41,7 +41,7 @@ all from a native desktop window or browser tab.
 
 | | Linux | macOS | Windows |
 |---|---|---|---|
-| Python | 3.10+ | 3.10+ | 3.10+ |
+| Python | 3.8+ | 3.8+ | 3.8+ |
 | Native window | GTK3 + WebKit2GTK (`gir1.2-webkit2-4.0`/`4.1`) — **auto-installed** | built-in WKWebView | Edge WebView2 (Win 10/11) |
 | Browser mode | ✅ any browser | ✅ any browser | ✅ any browser |
 | Claude Code | optional | optional | optional |
@@ -51,20 +51,45 @@ all from a native desktop window or browser tab.
 
 ## Install
 
-### Recommended: one-line install (no Python, no setup)
+### Recommended: pipx (one command, any Python 3.8+)
 
-The prebuilt binary bundles its own Python and needs **nothing** on your
-machine — it works on any Linux (glibc 2.28+, i.e. Ubuntu 20.04 and newer),
-regardless of what Python version (if any) you have.
+[pipx](https://pipx.pypa.io) installs Session Hub into its own isolated
+environment and puts `session-hub` on your PATH. It runs on **any Python 3.8 or
+newer** — including the Python that already ships with Ubuntu 20.04+, Debian
+11+, and macOS — so there's nothing else to install.
+
+```bash
+# install pipx once (skip if you already have it)
+python3 -m pip install --user pipx && python3 -m pipx ensurepath
+
+# install Session Hub straight from GitHub — no PyPI account needed
+pipx install "git+https://github.com/parthcodex1177/session-hub.git"
+
+session-hub        # opens the dashboard in your browser at 127.0.0.1:8788
+```
+
+Update any time with `pipx upgrade session-hub`; remove with
+`pipx uninstall session-hub`.
+
+**Native desktop window** (optional, instead of a browser tab) — add the
+`native` extra. On Linux this also needs GTK3 + WebKit2GTK (see below):
+
+```bash
+pipx install "session-hub[native] @ git+https://github.com/parthcodex1177/session-hub.git"
+session-hub-app
+```
+
+### Alternative: prebuilt binary (no Python at all)
+
+If you'd rather not install Python or pipx, grab the self-contained binary —
+it bundles its own Python and runs on any Linux with glibc 2.28+ (Ubuntu 20.04
+and newer):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/parthcodex1177/session-hub/main/install.sh | bash
 ```
 
-Then run `session-hub` (or click **Session Hub** in your app menu). Re-run the
-same command any time to update.
-
-**Or download the single file manually** from the
+Or download a single file from the
 [**Releases**](https://github.com/parthcodex1177/session-hub/releases) page:
 
 | OS | Asset |
@@ -76,9 +101,6 @@ same command any time to update.
 ```bash
 chmod +x session-hub-linux-x86_64 && ./session-hub-linux-x86_64
 ```
-
-> The binary opens the dashboard in your default browser. The source installs
-> below give a native desktop window instead, but require Python 3.10+.
 
 ### Linux (Ubuntu / Debian) — native app
 

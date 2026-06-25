@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import csv
 import io
@@ -8,6 +10,7 @@ import sys
 import threading
 from datetime import date, timedelta
 from pathlib import Path
+from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse, Response, StreamingResponse
@@ -119,13 +122,13 @@ def _fts_lookup(con, q: str) -> set[str] | None:
 @app.get("/api/sessions/export")
 def export_sessions(
     format: str = Query("json", pattern="^(json|csv)$"),
-    tool: str | None = None,
-    project: str | None = None,
-    model: str | None = None,
-    tag: str | None = None,
-    q: str | None = None,
-    date_from: str | None = None,
-    date_to: str | None = None,
+    tool: Optional[str] = None,
+    project: Optional[str] = None,
+    model: Optional[str] = None,
+    tag: Optional[str] = None,
+    q: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     include_empty: bool = False,
 ):
     con = _connect()
@@ -175,13 +178,13 @@ def export_sessions(
 
 @app.get("/api/sessions")
 def list_sessions(
-    tool: str | None = None,
-    project: str | None = None,
-    model: str | None = None,
-    tag: str | None = None,
-    q: str | None = None,
-    date_from: str | None = None,
-    date_to: str | None = None,
+    tool: Optional[str] = None,
+    project: Optional[str] = None,
+    model: Optional[str] = None,
+    tag: Optional[str] = None,
+    q: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     include_empty: bool = False,
     sort: str = "ended_at",
     dir: str = Query("desc", pattern="^(asc|desc)$"),
@@ -405,7 +408,7 @@ def session_detail(session_id: str):
 
 
 @app.get("/api/stats")
-def stats(date_from: str | None = None, date_to: str | None = None):
+def stats(date_from: Optional[str] = None, date_to: Optional[str] = None):
     where = ["user_prompt_count > 0"]
     params: list = []
     if date_from:

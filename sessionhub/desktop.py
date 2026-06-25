@@ -7,6 +7,8 @@ the process (the server thread is a daemon).
 
 This reuses 100% of the web UI; only the shell changes.
 """
+from __future__ import annotations
+
 import os
 import socket
 import threading

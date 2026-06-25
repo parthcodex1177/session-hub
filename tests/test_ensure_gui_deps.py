@@ -6,6 +6,8 @@ package the distro actually has, and no-op off Linux. We exercise them by
 sourcing the script in bash with a stubbed PATH (fake python3 / apt-cache /
 uname), so nothing real is installed.
 """
+from __future__ import annotations
+
 import shutil
 import subprocess
 from pathlib import Path

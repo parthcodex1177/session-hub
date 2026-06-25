@@ -85,4 +85,4 @@ Click a row to expand it in place (one open at a time):
 - **Read-only** — never writes to your Claude / Antigravity data.
 - **Security** — bound to 127.0.0.1 only, parameterized SQL everywhere,
   strict UUID validation before any resume command, no `shell=True`.
-- **Tested** — pytest suite + GitHub Actions CI on Python 3.10 / 3.11 / 3.12.
+- **Tested** — pytest suite + GitHub Actions CI on Python 3.8 / 3.10 / 3.12.

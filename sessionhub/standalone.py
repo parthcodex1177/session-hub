@@ -5,6 +5,8 @@ browser. Has NO native-GUI dependency (no GTK/WebKit), so PyInstaller can
 freeze it into one executable that runs on any machine without Python or
 system libraries installed.
 """
+from __future__ import annotations
+
 import socket
 import threading
 import time

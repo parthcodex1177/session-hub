@@ -9,6 +9,8 @@ protobuf string that contains the model name (e.g. "gemini-3-flash-a"). We
 read it with a 1-byte length prefix heuristic — if the pattern doesn't match
 the expected format, we skip rather than misreport.
 """
+from __future__ import annotations
+
 import json
 import re
 import sqlite3

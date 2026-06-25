@@ -1,4 +1,6 @@
 """Detect Claude Code sessions that are running right now."""
+from __future__ import annotations
+
 import json
 import os
 
